@@ -2,11 +2,17 @@ name: Save Images
 on:
   workflow_call:
     inputs:
-      target:
-        required: true
+      target_ref:
+        required: false
         type: string
+        default: 'refs/heads/main'
+      image_file:
+        required: false
+        type: string
+        default: image.yaml
 jobs:
   save:
+    if: github.ref == inputs.target_ref
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -37,7 +43,7 @@ jobs:
         path: .
     - name: Commit and push changes
       env:
-        TARGET: ${{ inputs.target }}
+        TARGET: ${{ inputs.image_file }}
       run: |
         git add ${TARGET}
         git commit -m ":robot: Update ${TARGET} for ${GITHUB_SHA}"
