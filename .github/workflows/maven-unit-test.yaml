@@ -3,11 +3,11 @@ on:
   workflow_call:
     inputs:
       version:
-        required: true
+        required: false
         type: string
         default: '21'
       distribution:
-        required: true
+        required: false
         type: string
         default: 'graalvm'
 jobs:
