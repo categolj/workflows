@@ -10,10 +10,6 @@ on:
         required: false
         type: string
         default: 'graalvm'
-      jar:
-        required: false
-        type: boolean
-        default: false
       e2e_test:
         required: false
         type: boolean
@@ -41,13 +37,13 @@ jobs:
         _JAVA_OPTIONS: -Djava.net.preferIPv4Stack=true
       run: ./mvnw -V --no-transfer-progress test
     - name: Build Jar
-      if: inputs.jar
+      if: inputs.e2e_test
       run: ./mvnw -V --no-transfer-progress package -DskipTests
     - name: Prepare wait.sh
-      if: inputs.jar && inputs.e2e_test
+      if: inputs.e2e_test
       run: wget -q https://github.com/making/workflows/raw/main/wait.sh
     - name: E2E Test
-      if: inputs.jar && inputs.e2e_test
+      if: inputs.e2e_test
       env:
         TEST_URL_1: ${{ inputs.test_url_1 }}
         TEST_URL_2: ${{ inputs.test_url_2 }}
