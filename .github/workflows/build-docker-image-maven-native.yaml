@@ -19,7 +19,7 @@ on:
         type: string
         default: image.yaml
 jobs:
-  build-docker-image:
+  build:
     if: github.ref == inputs.target_ref
     runs-on: ubuntu-latest
     permissions:
