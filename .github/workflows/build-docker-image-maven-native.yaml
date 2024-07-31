@@ -1,0 +1,82 @@
+name: Build Docker Image (Native)
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: false
+        type: string
+        default: '21'
+      distribution:
+        required: false
+        type: string
+        default: 'graalvm'
+      target_ref:
+        required: false
+        type: string
+        default: 'refs/heads/main'
+      image_file:
+        required: false
+        type: string
+        default: image.yaml
+jobs:
+  build-docker-image:
+    if: github.ref == inputs.target_ref
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    needs: test
+    steps:
+    - uses: actions/checkout@v2
+    - uses: graalvm/setup-graalvm@v1
+      with:
+        java-version: ${{ inputs.version }}
+        distribution: ${{ inputs.distribution }}
+        cache: 'maven'
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: build-artifacts
+        path: target
+    - name: native image
+      run: ./mvnw -V --no-transfer-progress -Pnative native:compile -DskipTests
+    - name: Install Pack
+      uses: buildpacks/github-actions/setup-pack@v5.7.3
+    - name: Pack Build
+      if: github.ref == 'refs/heads/main'
+      run: |
+        mkdir -p pack
+        mv ./target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} ./pack
+        cat <<EOF > pack/Procfile
+        web: ./${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+        EOF
+        pack build ghcr.io/${{ github.repository }}:native_${GITHUB_SHA} \
+          --env BP_OCI_SOURCE=https://github.com/${GITHUB_REPOSITORY} \
+          --env BP_OCI_REVISION=${GITHUB_SHA} \
+          --gid 1002 \
+          --builder paketobuildpacks/builder-jammy-tiny \
+          --buildpack gcr.io/paketo-buildpacks/image-labels \
+          --buildpack gcr.io/paketo-buildpacks/procfile \
+          --path pack
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: docker push
+      run: |
+        docker push ghcr.io/${{ github.repository }}:native_${GITHUB_SHA}
+        docker tag ghcr.io/${{ github.repository }}:native_${GITHUB_SHA} ghcr.io/${{ github.repository }}:native
+        docker push ghcr.io/${{ github.repository }}:native
+    - name: Generate digest
+      run: |
+        cat <<EOF > ${{ inputs.image_file }}
+        image: $(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}:native_${GITHUB_SHA})
+        git_revision: ${GITHUB_SHA}
+        EOF
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: image
+        path: ${{ inputs.image_file }}
