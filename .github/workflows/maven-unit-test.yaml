@@ -10,6 +10,22 @@ on:
         required: false
         type: string
         default: 'graalvm'
+      jar:
+        required: false
+        type: boolean
+        default: false
+      integration_test:
+        required: false
+        type: boolean
+        default: false
+      test_url_1:
+        required: false
+        type: string
+        default: ""
+      test_url_2:
+        required: false
+        type: string
+        default: ""
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -24,6 +40,26 @@ jobs:
       env:
         _JAVA_OPTIONS: -Djava.net.preferIPv4Stack=true
       run: ./mvnw -V --no-transfer-progress test
+    - name: Build Jar
+      if: inputs.jar
+      run: ./mvnw -V --no-transfer-progress package -DskipTests
+    - name: Prepare wait.sh
+      if: inputs.jar && inputs.integration_test
+      run: wget -q https://github.com/making/workflows/raw/main/wait.sh
+    - name: Integration Test
+      if: inputs.jar && inputs.integration_test
+      env:
+        TEST_URL_1: ${{ inputs.test_url_1 }}
+        TEST_URL_2: ${{ inputs.test_url_2 }}
+      run: |
+        java -jar target/*.jar & ./wait.sh
+        if [ -n "${TEST_URL_1}" ]; then
+          curl --fail --show-error --silent "${TEST_URL_1}"
+        fi
+        if [ -n "${TEST_URL_2}" ]; then
+          curl --fail --show-error --silent "${TEST_URL_2}"
+        fi
+        pkill -KILL java
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
