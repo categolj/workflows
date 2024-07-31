@@ -1,0 +1,31 @@
+name: Maven Unit Test
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        default: '21'
+      distribution:
+        required: true
+        type: string
+        default: 'graalvm'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: graalvm/setup-graalvm@v1
+      with:
+        java-version: ${{ inputs.version }}
+        distribution: ${{ inputs.distribution }}
+        cache: 'maven'
+    - name: mvn test
+      env:
+        _JAVA_OPTIONS: -Djava.net.preferIPv4Stack=true
+      run: ./mvnw -V --no-transfer-progress test
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: build-artifacts
+        path: target
