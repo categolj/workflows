@@ -2,6 +2,10 @@ name: Build Docker Image (JVM)
 on:
   workflow_call:
     inputs:
+      target_ref:
+        required: false
+        type: string
+        default: 'refs/heads/main'
       docker_file:
         required: false
         type: string
