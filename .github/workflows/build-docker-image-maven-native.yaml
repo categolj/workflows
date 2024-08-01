@@ -64,7 +64,7 @@ jobs:
       run: |
         ./target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} \
           --management.otlp.tracing.endpoint=https://httpbin.org/post \
-          --management.otlp.logs.endpoint=https://httpbin.org/post \
+          --management.otlp.logging.endpoint=https://httpbin.org/post \
           & ./wait.sh
         if [ -n "${TEST_URL_1}" ]; then
           curl --fail --show-error --silent "${TEST_URL_1}"
