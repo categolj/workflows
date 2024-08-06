@@ -1,0 +1,97 @@
+name: Build Native Image
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: false
+        type: string
+        default: '21'
+      distribution:
+        required: false
+        type: string
+        default: 'graalvm'
+      target_ref:
+        required: false
+        type: string
+        default: 'refs/heads/main'
+      image_file:
+        required: false
+        type: string
+        default: image.yaml
+      e2e_test:
+        required: false
+        type: boolean
+        default: false
+      test_url_1:
+        required: false
+        type: string
+        default: ""
+      test_url_2:
+        required: false
+        type: string
+        default: ""
+      download_target:
+        required: false
+        type: boolean
+        default: true
+      binary_suffix:
+        required: false
+        type: string
+        default: ""
+      runs-on:
+        required: false
+        type: string
+        default: '["ubuntu-latest"]'
+jobs:
+  build:
+    if: github.ref == inputs.target_ref
+    runs-on: ${{fromJSON(inputs.runs-on)}}
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v2
+    - uses: graalvm/setup-graalvm@v1
+      with:
+        java-version: ${{ inputs.version }}
+        distribution: ${{ inputs.distribution }}
+        cache: 'maven'
+    - name: Download build artifacts
+      if: inputs.download_target
+      uses: actions/download-artifact@v2
+      with:
+        name: build-artifacts
+        path: target
+    - name: native image
+      run: ./mvnw -V --no-transfer-progress -Pnative native:compile -DskipTests
+    - name: Prepare wait.sh
+      if: inputs.e2e_test
+      run: |
+        wget -q https://github.com/making/workflows/raw/main/wait.sh
+        chmod +x wait.sh
+    - name: E2E Test
+      if: inputs.e2e_test
+      env:
+        TEST_URL_1: ${{ inputs.test_url_1 }}
+        TEST_URL_2: ${{ inputs.test_url_2 }}
+      run: |
+        ./target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} \
+          --server.port=8080 \
+          --management.otlp.tracing.endpoint=https://httpbin.org/post \
+          --management.otlp.logging.endpoint=https://httpbin.org/post \
+          & ./wait.sh
+        if [ -n "${TEST_URL_1}" ]; then
+          curl --fail --show-error --silent "${TEST_URL_1}"
+        fi
+        if [ -n "${TEST_URL_2}" ]; then
+          curl --fail --show-error --silent "${TEST_URL_2}"
+        fi
+        pkill -KILL ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} || true
+    - name: Prepare bin
+      run: |
+        mkdir -p bin
+        mv ./target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} ./bin/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}${{ inputs.binary_suffix }}
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: bin
+        path: bin
