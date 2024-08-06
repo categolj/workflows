@@ -63,6 +63,7 @@ jobs:
         TEST_URL_2: ${{ inputs.test_url_2 }}
       run: |
         ./target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} \
+          --server.port=8080 \
           --management.otlp.tracing.endpoint=https://httpbin.org/post \
           --management.otlp.logging.endpoint=https://httpbin.org/post \
           & ./wait.sh
