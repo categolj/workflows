@@ -86,7 +86,7 @@ jobs:
           --env BP_OCI_SOURCE=https://github.com/${GITHUB_REPOSITORY} \
           --env BP_OCI_REVISION=${GITHUB_SHA} \
           --gid 1002 \
-          --builder paketobuildpacks/builder-jammy-tiny \
+          --builder paketobuildpacks/builder-jammy-buildpackless-tiny \
           --buildpack gcr.io/paketo-buildpacks/image-labels \
           --buildpack gcr.io/paketo-buildpacks/procfile \
           --path pack
