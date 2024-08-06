@@ -30,6 +30,10 @@ on:
         required: false
         type: string
         default: ""
+      download_target:
+        required: false
+        type: boolean
+        default: true
       runs-on:
         required: false
         type: string
@@ -49,6 +53,7 @@ jobs:
         distribution: ${{ inputs.distribution }}
         cache: 'maven'
     - name: Download build artifacts
+      if: inputs.download_target
       uses: actions/download-artifact@v2
       with:
         name: build-artifacts

@@ -18,6 +18,10 @@ on:
         required: false
         type: string
         default: image.yaml
+      download_target:
+        required: false
+        type: boolean
+        default: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,6 +36,7 @@ jobs:
         distribution: ${{ inputs.distribution }}
         cache: 'maven'
     - name: Download build artifacts
+      if: inputs.download_target
       uses: actions/download-artifact@v2
       with:
         name: build-artifacts
