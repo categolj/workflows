@@ -50,7 +50,7 @@ jobs:
         TEST_URL_1: ${{ inputs.test_url_1 }}
         TEST_URL_2: ${{ inputs.test_url_2 }}
       run: |
-        java -jar target/*.jar & ./wait.sh
+        java -jar target/*.jar --server.port=8080 & ./wait.sh
         if [ -n "${TEST_URL_1}" ]; then
           curl --fail --show-error --silent "${TEST_URL_1}"
         fi
