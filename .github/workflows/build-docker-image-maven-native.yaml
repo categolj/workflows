@@ -34,6 +34,10 @@ on:
         required: false
         type: boolean
         default: true
+      image_tag_suffix:
+        required: false
+        type: string
+        default: ""
       runs-on:
         required: false
         type: string
@@ -92,7 +96,7 @@ jobs:
         cat <<EOF > pack/Procfile
         web: ./${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
         EOF
-        pack build ghcr.io/${{ github.repository }}:native_${GITHUB_SHA} \
+        pack build ghcr.io/${{ github.repository }}:native${{ inputs.image_tag_suffix }}_${GITHUB_SHA} \
           --env BP_OCI_SOURCE=https://github.com/${GITHUB_REPOSITORY} \
           --env BP_OCI_REVISION=${GITHUB_SHA} \
           --gid 1002 \
@@ -108,13 +112,13 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: docker push
       run: |
-        docker push ghcr.io/${{ github.repository }}:native_${GITHUB_SHA}
-        docker tag ghcr.io/${{ github.repository }}:native_${GITHUB_SHA} ghcr.io/${{ github.repository }}:native
-        docker push ghcr.io/${{ github.repository }}:native
+        docker push ghcr.io/${{ github.repository }}:native${{ inputs.image_tag_suffix }}_${GITHUB_SHA}
+        docker tag ghcr.io/${{ github.repository }}:native${{ inputs.image_tag_suffix }}_${GITHUB_SHA} ghcr.io/${{ github.repository }}:native${{ inputs.image_tag_suffix }}
+        docker push ghcr.io/${{ github.repository }}:native${{ inputs.image_tag_suffix }}
     - name: Generate digest
       run: |
         cat <<EOF > ${{ inputs.image_file }}
-        image: $(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}:native_${GITHUB_SHA})
+        image: $(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}:native${{ inputs.image_tag_suffix }}_${GITHUB_SHA})
         git_revision: ${GITHUB_SHA}
         EOF
     - name: Upload artifact
