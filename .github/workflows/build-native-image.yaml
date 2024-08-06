@@ -14,10 +14,6 @@ on:
         required: false
         type: string
         default: 'refs/heads/main'
-      image_file:
-        required: false
-        type: string
-        default: image.yaml
       e2e_test:
         required: false
         type: boolean
