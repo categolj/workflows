@@ -1,0 +1,11 @@
+name: Set version with Github SHA
+description: Set version with Github SHA
+runs:
+  using: composite
+  steps:
+  - name: Set version with Github SHA
+    shell: bash
+    run: |
+      CURRENT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+      NEW_VERSION=$(echo CURRENT_VERSION | sed "s/-SNAPSHOT/.${GITHUB_SHA}/")
+      ./mvnw versions:set -DnewVersion=${NEW_VERSION} -DgenerateBackupPoms=false
