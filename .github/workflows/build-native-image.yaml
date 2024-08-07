@@ -98,7 +98,8 @@ jobs:
         pkill -KILL ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} || true
     - name: Prepare bin
       run: |
-        mv ./target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} ./${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}${{ inputs.binary_suffix }}
+        ls -la
+        cp ./target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} ./${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}${{ inputs.binary_suffix }}
         echo "binary_name=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}${{ inputs.binary_suffix }}" >> $GITHUB_ENV
     - name: Upload artifact
       uses: actions/upload-artifact@v2
