@@ -112,7 +112,7 @@ jobs:
       run: |
         ls -R ${{ inputs.pre_built_artifact_path }}
         mkdir -p target
-        mv ${{ inputs.pre_built_artifact_path }}/* target
+        mv ${{ inputs.pre_built_artifact_path }}/* target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
         ls -R target
     - name: Install Pack
       uses: buildpacks/github-actions/setup-pack@v5.7.3
