@@ -92,6 +92,7 @@ jobs:
         mv ${{ inputs.pre_built_artifact_path }}/* target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
         chmod +x target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
         ls -la target
+        file target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
     - name: Prepare wait.sh
       if: inputs.e2e_test
       run: |
