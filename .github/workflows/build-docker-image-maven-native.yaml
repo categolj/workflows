@@ -38,6 +38,18 @@ on:
         required: false
         type: string
         default: ""
+      use_pre_built_artifact:
+        required: false
+        type: boolean
+        default: false
+      pre_built_artifact_name:
+        required: false
+        type: string
+        default: ""
+      pre_built_artifact_path:
+        required: false
+        type: string
+        default: ""
       runs-on:
         required: false
         type: string
@@ -52,25 +64,27 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: graalvm/setup-graalvm@v1
+      if: ${{ !inputs.use_pre_built_artifact }}
       with:
         java-version: ${{ inputs.version }}
         distribution: ${{ inputs.distribution }}
         cache: 'maven'
     - name: Download build artifacts
-      if: inputs.download_target
+      if: ${{ !inputs.use_pre_built_artifact && inputs.download_target }}
       uses: actions/download-artifact@v2
       with:
         name: build-artifacts
         path: target
     - name: native image
+      if: ${{ !inputs.use_pre_built_artifact }}
       run: ./mvnw -V --no-transfer-progress -Pnative native:compile -DskipTests
     - name: Prepare wait.sh
-      if: inputs.e2e_test
+      if: ${{ !inputs.use_pre_built_artifact && inputs.e2e_test }}
       run: |
         wget -q https://github.com/making/workflows/raw/main/wait.sh
         chmod +x wait.sh
     - name: E2E Test
-      if: inputs.e2e_test
+      if: ${{ !inputs.use_pre_built_artifact && inputs.e2e_test }}
       env:
         TEST_URL_1: ${{ inputs.test_url_1 }}
         TEST_URL_2: ${{ inputs.test_url_2 }}
@@ -87,6 +101,19 @@ jobs:
           curl --fail --show-error --silent "${TEST_URL_2}"
         fi
         pkill -KILL ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} || true
+    - name: Download pre-build artifact
+      if: inputs.use_pre_built_artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ inputs.pre_built_artifact_name }}
+        path: ${{ inputs.pre_built_artifact_path }}
+    - name: Move downloaded file
+      if: inputs.use_pre_built_artifact
+      run: |
+        ls -R ${{ inputs.pre_built_artifact_path }}
+        mkdir -p target
+        mv ${{ inputs.pre_built_artifact_path }}/* target
+        ls -R target
     - name: Install Pack
       uses: buildpacks/github-actions/setup-pack@v5.7.3
     - name: Pack Build
