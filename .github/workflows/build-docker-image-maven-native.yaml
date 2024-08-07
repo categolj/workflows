@@ -53,7 +53,7 @@ on:
       runs-on:
         required: false
         type: string
-        default: '["ubuntu-latest"]'
+        default: ubuntu-latest
 jobs:
   build:
     if: github.ref == inputs.target_ref
