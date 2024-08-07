@@ -75,6 +75,8 @@ jobs:
       with:
         name: build-artifacts
         path: target
+    - name: Set version
+      uses: ./.github/actions/set-version-with-sha
     - name: native image
       if: ${{ !inputs.use_pre_built_artifact }}
       run: ./mvnw -V --no-transfer-progress -Pnative native:compile -DskipTests
