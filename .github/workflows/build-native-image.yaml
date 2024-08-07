@@ -58,7 +58,7 @@ jobs:
         name: build-artifacts
         path: target
     - name: Set version
-      uses: making/workflows/.github/actions/set-version-with-sha
+      uses: making/workflows/.github/actions/set-version-with-sha@main
     - name: native image
       run: ./mvnw -V --no-transfer-progress -Pnative native:compile -DskipTests
     - name: Prepare wait.sh

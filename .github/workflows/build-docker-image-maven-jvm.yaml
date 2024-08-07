@@ -42,7 +42,7 @@ jobs:
         name: build-artifacts
         path: target
     - name: Set version
-      uses: making/workflows/.github/actions/set-version-with-sha
+      uses: making/workflows/.github/actions/set-version-with-sha@main
     - name: build image
       run: ./mvnw -V --no-transfer-progress spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository }}:jvm_${GITHUB_SHA}
     - name: Login to GitHub Container Registry
