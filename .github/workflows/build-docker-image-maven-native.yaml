@@ -78,13 +78,27 @@ jobs:
     - name: native image
       if: ${{ !inputs.use_pre_built_artifact }}
       run: ./mvnw -V --no-transfer-progress -Pnative native:compile -DskipTests
+    - name: Download pre-build artifact
+      if: inputs.use_pre_built_artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ inputs.pre_built_artifact_name }}
+        path: ${{ inputs.pre_built_artifact_path }}
+    - name: Move downloaded file
+      if: inputs.use_pre_built_artifact
+      run: |
+        ls -la ${{ inputs.pre_built_artifact_path }}
+        mkdir -p target
+        mv ${{ inputs.pre_built_artifact_path }}/* target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+        chmod +x target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+        ls -la target
     - name: Prepare wait.sh
-      if: ${{ !inputs.use_pre_built_artifact && inputs.e2e_test }}
+      if: inputs.e2e_test
       run: |
         wget -q https://github.com/making/workflows/raw/main/wait.sh
         chmod +x wait.sh
     - name: E2E Test
-      if: ${{ !inputs.use_pre_built_artifact && inputs.e2e_test }}
+      if: inputs.e2e_test
       env:
         TEST_URL_1: ${{ inputs.test_url_1 }}
         TEST_URL_2: ${{ inputs.test_url_2 }}
@@ -101,19 +115,6 @@ jobs:
           curl --fail --show-error --silent "${TEST_URL_2}"
         fi
         pkill -KILL ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} || true
-    - name: Download pre-build artifact
-      if: inputs.use_pre_built_artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: ${{ inputs.pre_built_artifact_name }}
-        path: ${{ inputs.pre_built_artifact_path }}
-    - name: Move downloaded file
-      if: inputs.use_pre_built_artifact
-      run: |
-        ls -R ${{ inputs.pre_built_artifact_path }}
-        mkdir -p target
-        mv ${{ inputs.pre_built_artifact_path }}/* target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
-        ls -R target
     - name: Install Pack
       uses: buildpacks/github-actions/setup-pack@v5.7.3
     - name: Pack Build
