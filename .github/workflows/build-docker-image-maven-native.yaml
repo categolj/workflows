@@ -57,7 +57,7 @@ on:
 jobs:
   build:
     if: github.ref == inputs.target_ref
-    runs-on: ${{fromJSON(inputs.runs-on)}}
+    runs-on: ${{ inputs.runs-on }}
     permissions:
       contents: read
       packages: write
