@@ -10,6 +10,10 @@ on:
         required: false
         type: string
         default: image.yaml
+      webhook_url:
+        required: false
+        type: string
+        default: ""
 jobs:
   save:
     if: github.ref == inputs.target_ref
@@ -48,3 +52,10 @@ jobs:
         git add ${TARGET}
         git commit -m ":robot: Update ${TARGET} for ${GITHUB_SHA}"
         git push origin images
+    - name: Google Chat Notification
+      if: ${{ inputs.webhook_url != '' }}
+      uses: Co-qn/google-chat-notification@releases/v1
+      with:
+        name: ${{ github.job }}
+        url: ${{ inputs.webhook_url }}
+        status: ${{ job.status }}
