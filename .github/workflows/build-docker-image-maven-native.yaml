@@ -123,7 +123,7 @@ jobs:
         fi
         pkill -KILL ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} || true
     - name: Install Pack
-      uses: buildpacks/github-actions/setup-pack@v5.7.3
+      uses: buildpacks/github-actions/setup-pack@v5.7.4
     - name: Pack Build
       run: |
         mkdir -p pack
