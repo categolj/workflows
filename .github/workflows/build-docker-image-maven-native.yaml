@@ -86,7 +86,7 @@ jobs:
       run: ./mvnw -V --no-transfer-progress -Pnative native:compile -DskipTests
     - name: Download pre-build artifact
       if: inputs.use_pre_built_artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.pre_built_artifact_name }}
         path: ${{ inputs.pre_built_artifact_path }}
