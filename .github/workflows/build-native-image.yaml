@@ -90,7 +90,7 @@ jobs:
         cp ./target/${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} ./${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}${{ inputs.binary_suffix }}
         echo "binary_name=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}${{ inputs.binary_suffix }}" >> $GITHUB_ENV
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.binary_name }}
         path: ${{ env.binary_name }}
