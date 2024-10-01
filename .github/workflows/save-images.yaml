@@ -6,6 +6,10 @@ on:
         required: false
         type: string
         default: 'refs/heads/main'
+      image_name:
+        required: false
+        type: string
+        default: image
       image_file:
         required: false
         type: string
@@ -43,7 +47,7 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v4
       with:
-        name: image
+        name: ${{ inputs.image_name }}
         path: .
     - name: Commit and push changes
       env:

@@ -14,6 +14,10 @@ on:
         required: false
         type: string
         default: 'refs/heads/main'
+      image_name:
+        required: false
+        type: string
+        default: image
       image_file:
         required: false
         type: string
@@ -160,5 +164,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: image
+        name: ${{ inputs.image_name }}
         path: ${{ inputs.image_file }}
