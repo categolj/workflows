@@ -26,6 +26,10 @@ on:
         required: false
         type: boolean
         default: true
+      use_tanzu_buildpack:
+        required: false
+        type: boolean
+        default: false
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -47,7 +51,11 @@ jobs:
         path: target
     - name: Set version
       uses: making/workflows/.github/actions/set-version-with-sha@main
-    - name: build image
+    - name: build image (Paketo Buildpack)
+      if: ${{ !inputs.use_tanzu_buildpack }}
+      run: ./mvnw -V --no-transfer-progress spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository }}:jvm_${GITHUB_SHA}
+    - name: build image (Tanzu Buildpack)
+      if: inputs.use_tanzu_buildpack
       run: ./mvnw -V --no-transfer-progress spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository }}:jvm_${GITHUB_SHA} -Dspring-boot.build-image.builder=tanzu-build-public.packages.broadcom.com/builders/builder-jammy-base:0.1.37
     - name: Login to GitHub Container Registry
       if: github.ref == inputs.target_ref
