@@ -43,7 +43,8 @@ jobs:
     - name: build image (Paketo Buildpack)
       run: |
         OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
-        ./mvnw -V -f ${{ inputs.pom_dir }} --no-transfer-progress spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:jvm_${OS_ARCH}_${GITHUB_SHA}
+        IMAGE_BASE=echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}" | sed 's|/\.||'
+        ./mvnw -V -f ${{ inputs.pom_dir }} --no-transfer-progress spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=${IMAGE_BASE}:jvm_${OS_ARCH}_${GITHUB_SHA}
     - name: Login to GitHub Container Registry
       if: github.ref == inputs.target_ref
       uses: docker/login-action@v3
@@ -55,15 +56,17 @@ jobs:
       if: github.ref == inputs.target_ref
       run: |
         OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
-        docker push ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:jvm_${OS_ARCH}_${GITHUB_SHA}
-        docker tag ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:jvm_${OS_ARCH}_${GITHUB_SHA} ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:jvm_${OS_ARCH}
-        docker push ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:jvm_${OS_ARCH}
+        IMAGE_BASE=echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}" | sed 's|/\.||'
+        docker push ${IMAGE_BASE}:jvm_${OS_ARCH}_${GITHUB_SHA}
+        docker tag ${IMAGE_BASE}:jvm_${OS_ARCH}_${GITHUB_SHA} ${IMAGE_BASE}:jvm_${OS_ARCH}
+        docker push ${IMAGE_BASE}:jvm_${OS_ARCH}
     - name: Generate digest
       if: github.ref == inputs.target_ref
       run: |
         OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
+        IMAGE_BASE=echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}" | sed 's|/\.||'
         cat <<EOF > ${{ inputs.image_file }}
-        image: $(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:jvm_${OS_ARCH}_${GITHUB_SHA})
+        image: $(docker inspect --format='{{index .RepoDigests 0}}' ${IMAGE_BASE}:jvm_${OS_ARCH}_${GITHUB_SHA})
         git_revision: ${GITHUB_SHA}
         EOF
     - name: Upload artifact

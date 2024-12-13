@@ -31,11 +31,8 @@ jobs:
     - name: docker manifest push
       if: github.ref == inputs.target_ref
       run: |
-        docker manifest create ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}_${GITHUB_SHA} \
-          --amend ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}_amd64_${GITHUB_SHA} \
-          --amend ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}_aarch64_${GITHUB_SHA}
-        docker manifest create ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }} \
-          --amend ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}_amd64_${GITHUB_SHA} \
-          --amend ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}_aarch64_${GITHUB_SHA}
-        docker manifest push ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}_${GITHUB_SHA}
-        docker manifest push ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}
+        IMAGE_BASE=echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}:${{ inputs.prefix }}" | sed 's|/\.||'
+        docker manifest create ${IMAGE_BASE}_${GITHUB_SHA} --amend ${IMAGE_BASE}_amd64_${GITHUB_SHA} --amend ${IMAGE_BASE}_aarch64_${GITHUB_SHA}
+        docker manifest push ${IMAGE_BASE}_${GITHUB_SHA}
+        docker manifest create ${IMAGE_BASE} --amend ${IMAGE_BASE}_amd64_${GITHUB_SHA} --amend ${IMAGE_BASE}_aarch64_${GITHUB_SHA}
+        docker manifest push ${IMAGE_BASE}
