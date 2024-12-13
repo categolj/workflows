@@ -20,7 +20,10 @@ jobs:
       contents: read
       packages: write
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Get tags
+      run: git fetch --tags origin
     - name: Login to GitHub Container Registry
       if: github.ref == inputs.target_ref
       uses: docker/login-action@v3
