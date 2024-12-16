@@ -1,0 +1,80 @@
+name: Build OCI Image (Native)
+on:
+  workflow_call:
+    inputs:
+      pom_dir:
+        required: false
+        type: string
+        default: '.'
+      image_name:
+        required: false
+        type: string
+        default: image
+      image_file:
+        required: false
+        type: string
+        default: image.yaml
+      target_ref:
+        required: false
+        type: string
+        default: 'refs/heads/main'
+      runs_on:
+        required: false
+        type: string
+        default: ubuntu-latest
+jobs:
+  build:
+    runs-on: ${{ inputs.runs_on }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Get tags
+      run: git fetch --tags origin
+    - uses: graalvm/setup-graalvm@v1
+      with:
+        java-version: '21'
+        distribution: graalvm
+        cache: 'maven'
+    - name: Set version
+      run: |
+        CURRENT_VERSION=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=project.version -q -DforceStdout)
+        NEW_VERSION=$(echo $CURRENT_VERSION | sed "s/-SNAPSHOT/.${GITHUB_SHA}/")
+        ./mvnw -f ${{ inputs.pom_dir }} versions:set -DnewVersion=${NEW_VERSION} -DgenerateBackupPoms=false --no-transfer-progress
+    - name: build image (Paketo Buildpack)
+      run: |
+        OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
+        IMAGE_BASE=$(echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}" | sed 's|/\.||')
+        ./mvnw -V -f ${{ inputs.pom_dir }} --no-transfer-progress spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=${IMAGE_BASE}:native_${OS_ARCH}_${GITHUB_SHA} -Pnative
+    - name: Login to GitHub Container Registry
+      if: github.ref == inputs.target_ref
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: docker push
+      if: github.ref == inputs.target_ref
+      run: |
+        OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
+        IMAGE_BASE=$(echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}" | sed 's|/\.||')
+        docker push ${IMAGE_BASE}:native_${OS_ARCH}_${GITHUB_SHA}
+        docker tag ${IMAGE_BASE}:native_${OS_ARCH}_${GITHUB_SHA} ${IMAGE_BASE}:native_${OS_ARCH}
+        docker push ${IMAGE_BASE}:native_${OS_ARCH}
+    - name: Generate digest
+      if: github.ref == inputs.target_ref
+      run: |
+        OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
+        IMAGE_BASE=$(echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}" | sed 's|/\.||')
+        cat <<EOF > ${{ inputs.image_file }}
+        image: $(docker inspect --format='{{index .RepoDigests 0}}' ${IMAGE_BASE}:native_${OS_ARCH}_${GITHUB_SHA})
+        git_revision: ${GITHUB_SHA}
+        EOF
+    - name: Upload artifact
+      if: github.ref == inputs.target_ref
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.image_name }}
+        path: ${{ inputs.image_file }}
