@@ -47,7 +47,7 @@ jobs:
       run: |
         OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
         IMAGE_BASE=$(echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}" | sed 's|/\.||')
-        sed -i 's|paketo-buildpacks/java-native-image|paketo-buildpacks/java|' pom.xml
+        sed -i 's|urn:cnb:builder:paketo-buildpacks/java-native-image|docker.io/paketobuildpacks/builder-jammy-java-tiny|' pom.xml
         sed -i 's|docker.io/paketobuildpacks/oracle|docker.io/paketobuildpacks/graalvm|' pom.xml
         ./mvnw -V -f ${{ inputs.pom_dir }} --no-transfer-progress spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=${IMAGE_BASE}:jvm_${OS_ARCH}_${GITHUB_SHA}
     - name: Login to GitHub Container Registry
