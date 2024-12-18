@@ -39,11 +39,13 @@ jobs:
         distribution: graalvm
         cache: 'maven'
     - name: Set version
+      if: github.ref == inputs.target_ref
       run: |
         CURRENT_VERSION=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=project.version -q -DforceStdout)
         NEW_VERSION=$(echo $CURRENT_VERSION | sed "s/-SNAPSHOT/.${GITHUB_SHA}/")
         ./mvnw -f ${{ inputs.pom_dir }} versions:set -DnewVersion=${NEW_VERSION} -DgenerateBackupPoms=false --no-transfer-progress
     - name: build image (Paketo Buildpack)
+      if: github.ref == inputs.target_ref
       run: |
         OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
         IMAGE_BASE=$(echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}" | sed 's|/\.||')
