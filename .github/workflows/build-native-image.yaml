@@ -58,13 +58,13 @@ jobs:
         name: build-artifacts
         path: target
     - name: Set version
-      uses: making/workflows/.github/actions/set-version-with-sha@main
+      uses: categolj/workflows/.github/actions/set-version-with-sha@main
     - name: native image (Linux x86_64, Mac)
       run: ./mvnw -V --no-transfer-progress -Pnative native:compile -DskipTests
     - name: Prepare wait.sh
       if: inputs.e2e_test
       run: |
-        wget -q https://github.com/making/workflows/raw/main/wait.sh
+        wget -q https://github.com/categolj/workflows/raw/main/wait.sh
         chmod +x wait.sh
     - name: E2E Test
       if: inputs.e2e_test
