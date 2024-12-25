@@ -12,7 +12,7 @@ orb shell -m self-hosted-runner
 TODO https://github.com/actions/partner-runner-images/blob/main/images/arm-ubuntu-24-image.md
 
 ```
-sudo apt-get install -y git curl wget jq
+sudo apt-get install -y git curl wget net-tools jq build-essential zlib1g-dev
 
 sudo groupadd runner
 sudo useradd -m -g runner -s /bin/bash runner-categolj
