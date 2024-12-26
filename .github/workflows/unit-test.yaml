@@ -28,7 +28,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Get tags
-      run: git fetch --tags origin
+      run: |
+        git tag -d $(git tag)
+        git fetch --tags origin
     - uses: graalvm/setup-graalvm@v1
       with:
         java-version: '21'
