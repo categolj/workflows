@@ -47,7 +47,7 @@ jobs:
       run: |
         OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
         IMAGE_BASE=$(echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}" | sed 's|/\.||')
-        sed -i '/<buildpacks>/,/<\/buildpacks>/d' pom.xml
+        sed -i '/<buildpacks>/,/<\/buildpacks>/d' ${{ inputs.pom_dir }}/pom.xml
         ./mvnw -V -f ${{ inputs.pom_dir }} --no-transfer-progress spring-boot:build-image -DskipTests -Dspring-boot.build-image.imageName=${IMAGE_BASE}:jvm_${OS_ARCH}_${GITHUB_SHA}
     - name: Login to GitHub Container Registry
       if: github.ref == inputs.target_ref
