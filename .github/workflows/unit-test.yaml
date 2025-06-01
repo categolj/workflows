@@ -38,6 +38,8 @@ jobs:
         cache: 'maven'
     - name: unit test
       run: ./mvnw -V -f ${{ inputs.pom_dir }} clean test --no-transfer-progress
+      env:
+        AWS_REGION: ap-northeast-1
     - name: Build Jar
       if: inputs.e2e_test
       run: ./mvnw -V -f ${{ inputs.pom_dir }} package -DskipTests --no-transfer-progress
