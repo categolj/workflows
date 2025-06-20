@@ -26,14 +26,11 @@ on:
         required: false
         type: string
         default: ""
+    secrets:
       maven_username:
         required: false
-        type: string
-        default: ""
       maven_password:
         required: false
-        type: string
-        default: ""
 jobs:
   build:
     runs-on: ${{ inputs.runs_on }}
@@ -51,12 +48,12 @@ jobs:
         distribution: graalvm
         cache: 'maven'
     - name: Prepare Maven settings.xml
-      if: inputs.maven_server_id != '' && inputs.maven_username != '' && inputs.maven_password != ''
+      if: inputs.maven_server_id != '' && secrets.maven_username != '' && secrets.maven_password != ''
       uses: categolj/workflows/.github/actions/prepare-settings-xml@main
       with:
         server_id: ${{ inputs.maven_server_id }}
-        username: ${{ inputs.maven_username }}
-        password: ${{ inputs.maven_password }}
+        username: ${{ secrets.maven_username }}
+        password: ${{ secrets.maven_password }}
     - name: Set version
       if: github.ref == inputs.target_ref
       run: |
