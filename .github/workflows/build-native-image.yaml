@@ -61,7 +61,10 @@ jobs:
         distribution: ${{ inputs.distribution }}
         cache: 'maven'
     - name: Prepare Maven settings.xml
-      if: inputs.maven_server_id != '' && secrets.maven_username != '' && secrets.maven_password != ''
+      env:
+        username: ${{ secrets.maven_username }}
+        password: ${{ secrets.maven_password }}
+      if: ${{ inputs.maven_server_id != '' && env.maven_username != '' && env.maven_password != '' }}
       uses: categolj/workflows/.github/actions/prepare-settings-xml@main
       with:
         server_id: ${{ inputs.maven_server_id }}
