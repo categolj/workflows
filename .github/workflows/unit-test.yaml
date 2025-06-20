@@ -47,9 +47,9 @@ jobs:
       if: ${{ env.MAVEN_SERVER_ID != '' && env.MAVEN_USERNAME != '' && env.MAVEN_PASSWORD != '' }}
       uses: categolj/workflows/.github/actions/prepare-settings-xml@main
       env:
-        server_id: ${{ secrets.MAVEN_SERVER_ID }}
-        username: ${{ secrets.MAVEN_USERNAME }}
-        password: ${{ secrets.MAVEN_PASSWORD }}
+        MAVEN_SERVER_ID: ${{ secrets.MAVEN_SERVER_ID }}
+        MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
       with:
         server_id: ${{ secrets.MAVEN_SERVER_ID }}
         username: ${{ secrets.MAVEN_USERNAME }}
