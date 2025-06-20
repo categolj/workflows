@@ -26,6 +26,18 @@ on:
         required: false
         type: boolean
         default: true
+      maven_server_id:
+        required: false
+        type: string
+        default: ""
+      maven_username:
+        required: false
+        type: string
+        default: ""
+      maven_password:
+        required: false
+        type: string
+        default: ""
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -36,6 +48,13 @@ jobs:
         java-version: ${{ inputs.version }}
         distribution: ${{ inputs.distribution }}
         cache: 'maven'
+    - name: Prepare Maven settings.xml
+      if: inputs.maven_server_id != '' && inputs.maven_username != '' && inputs.maven_password != ''
+      uses: categolj/workflows/.github/actions/prepare-settings-xml@main
+      with:
+        server_id: ${{ inputs.maven_server_id }}
+        username: ${{ inputs.maven_username }}
+        password: ${{ inputs.maven_password }}
     - name: mvn test
       env:
         _JAVA_OPTIONS: -Djava.net.preferIPv4Stack=true

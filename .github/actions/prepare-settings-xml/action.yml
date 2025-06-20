@@ -1,0 +1,34 @@
+name: Prepare Maven Settings XML
+description: Creates Maven settings.xml with authentication credentials
+inputs:
+  server_id:
+    description: Server ID for Maven repository
+    required: true
+  username:
+    description: Username for Maven repository authentication
+    required: true
+  password:
+    description: Password for Maven repository authentication
+    required: true
+runs:
+  using: composite
+  steps:
+  - name: Create Maven settings.xml
+    shell: bash
+    run: |
+      mkdir -p ~/.m2
+      cat > ~/.m2/settings.xml << EOF
+      <?xml version="1.0" encoding="UTF-8"?>
+      <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                    http://maven.apache.org/xsd/settings-1.0.0.xsd">
+        <servers>
+          <server>
+            <id>${{ inputs.server_id }}</id>
+            <username>${{ inputs.username }}</username>
+            <password>${{ inputs.password }}</password>
+          </server>
+        </servers>
+      </settings>
+      EOF
