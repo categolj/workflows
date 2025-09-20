@@ -46,7 +46,7 @@ jobs:
       run: git fetch --tags origin
     - uses: graalvm/setup-graalvm@v1
       with:
-        java-version: '21'
+        java-version: '25'
         distribution: graalvm
         cache: 'maven'
     - name: Prepare Maven settings.xml
