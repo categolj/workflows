@@ -22,6 +22,10 @@ on:
         required: false
         type: string
         default: ubuntu-latest
+      java_version:
+        required: false
+        type: string
+        default: '25'
     secrets:
       MAVEN_SERVER_ID:
         required: false
@@ -42,7 +46,7 @@ jobs:
       run: git fetch --tags origin
     - uses: graalvm/setup-graalvm@v1
       with:
-        java-version: '25'
+        java-version: ${{ inputs.java_version }}
         distribution: graalvm
         cache: 'maven'
     - name: Prepare Maven settings.xml
