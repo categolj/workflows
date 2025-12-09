@@ -100,7 +100,7 @@ jobs:
           image:
             repository: ${IMAGE_BASE}
             digest: ${IMAGE_DIGEST}
-          additionalPodAnnotations:
+          podLabels:
             github.com/revision: ${GITHUB_SHA}
         EOF
     - name: Upload artifact
