@@ -96,9 +96,15 @@ jobs:
       run: |
         OS_ARCH=$(./mvnw -f ${{ inputs.pom_dir }} help:evaluate -Dexpression=os.arch -q -DforceStdout)
         IMAGE_BASE=$(echo "ghcr.io/${{ github.repository }}/${{ inputs.pom_dir }}" | sed 's|/\.||')
+        IMAGE=$(docker inspect --format='{{index .RepoDigests 0}}' ${IMAGE_BASE}:jvm_${OS_ARCH}_${GITHUB_SHA})
+        IMAGE_DIGEST=$(echo ${IMAGE} | cut -d'@' -f2)
         cat <<EOF > ${{ inputs.image_file }}
-        image: $(docker inspect --format='{{index .RepoDigests 0}}' ${IMAGE_BASE}:native_${OS_ARCH}_${GITHUB_SHA})
+        image: ${IMAGE}
         git_revision: ${GITHUB_SHA}
+        deployment:
+          image:
+            repository: ${IMAGE_BASE}
+            digest: ${IMAGE_DIGEST}
         EOF
     - name: Upload artifact
       if: github.ref == inputs.target_ref
