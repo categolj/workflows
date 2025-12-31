@@ -33,6 +33,8 @@ on:
         required: false
       MAVEN_PASSWORD:
         required: false
+      MAVEN_TOKEN:
+        required: false
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -43,7 +45,7 @@ jobs:
         java-version: ${{ inputs.version }}
         distribution: ${{ inputs.distribution }}
         cache: 'maven'
-    - name: Prepare Maven settings.xml
+    - name: Prepare Maven settings.xml (username/password)
       if: ${{ env.MAVEN_SERVER_ID != '' && env.MAVEN_USERNAME != '' && env.MAVEN_PASSWORD != '' }}
       uses: categolj/workflows/.github/actions/prepare-settings-xml@main
       env:
@@ -54,6 +56,15 @@ jobs:
         server_id: ${{ secrets.MAVEN_SERVER_ID }}
         username: ${{ secrets.MAVEN_USERNAME }}
         password: ${{ secrets.MAVEN_PASSWORD }}
+    - name: Prepare Maven settings.xml (token)
+      if: ${{ env.MAVEN_SERVER_ID != '' && env.MAVEN_TOKEN != '' }}
+      uses: categolj/workflows/.github/actions/prepare-settings-xml@main
+      env:
+        MAVEN_SERVER_ID: ${{ secrets.MAVEN_SERVER_ID }}
+        MAVEN_TOKEN: ${{ secrets.MAVEN_TOKEN }}
+      with:
+        server_id: ${{ secrets.MAVEN_SERVER_ID }}
+        token: ${{ secrets.MAVEN_TOKEN }}
     - name: mvn test
       env:
         _JAVA_OPTIONS: -Djava.net.preferIPv4Stack=true

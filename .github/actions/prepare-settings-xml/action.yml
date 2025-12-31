@@ -5,11 +5,14 @@ inputs:
     description: Server ID for Maven repository
     required: true
   username:
-    description: Username for Maven repository authentication
-    required: true
+    description: Username for Maven repository authentication (required if token is not set)
+    required: false
   password:
-    description: Password for Maven repository authentication
-    required: true
+    description: Password for Maven repository authentication (required if token is not set)
+    required: false
+  token:
+    description: Bearer token for Maven repository authentication (alternative to username/password)
+    required: false
 runs:
   using: composite
   steps:
@@ -17,7 +20,30 @@ runs:
     shell: bash
     run: |
       mkdir -p ~/.m2
-      cat > ~/.m2/settings.xml << EOF
+      if [ -n "${{ inputs.token }}" ]; then
+        cat > ~/.m2/settings.xml << EOF
+      <?xml version="1.0" encoding="UTF-8"?>
+      <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                    http://maven.apache.org/xsd/settings-1.0.0.xsd">
+        <servers>
+          <server>
+            <id>${{ inputs.server_id }}</id>
+            <configuration>
+              <httpHeaders>
+                <property>
+                  <name>Authorization</name>
+                  <value>Bearer ${{ inputs.token }}</value>
+                </property>
+              </httpHeaders>
+            </configuration>
+          </server>
+        </servers>
+      </settings>
+      EOF
+      else
+        cat > ~/.m2/settings.xml << EOF
       <?xml version="1.0" encoding="UTF-8"?>
       <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -32,3 +58,4 @@ runs:
         </servers>
       </settings>
       EOF
+      fi
